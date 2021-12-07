@@ -196,6 +196,7 @@ where
         for (line, parts) in sixteen_iter {
             if line < max {
                 hex(line, parts, writer)?;
+            } else {
                 break;
             }
         }
