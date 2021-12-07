@@ -28,90 +28,120 @@
 //!     );
 //! #     Ok(())
 //! # }
+// rustc lints
 #![deny(
-    absolute_paths_not_starting_with_crate,
-    anonymous_parameters,
-    array_into_iter,
-    bare_trait_objects,
-    dead_code,
-    deprecated,
-    deprecated_in_future,
-    elided_lifetimes_in_paths,
-    ellipsis_inclusive_range_patterns,
-    explicit_outlives_requirements,
-    exported_private_dependencies,
-    illegal_floating_point_literal_pattern,
-    improper_ctypes,
-    incomplete_features,
-    indirect_structural_match,
-    intra_doc_link_resolution_failure,
-    invalid_value,
-    irrefutable_let_patterns,
-    keyword_idents,
-    late_bound_lifetime_arguments,
-    macro_use_extern_crate,
-    meta_variable_misuse,
-    missing_copy_implementations,
-    missing_debug_implementations,
-    missing_doc_code_examples,
-    missing_docs,
-    mutable_borrow_reservation_conflict,
-    no_mangle_generic_items,
-    non_ascii_idents,
-    non_camel_case_types,
-    non_shorthand_field_patterns,
-    non_snake_case,
-    non_upper_case_globals,
-    overlapping_patterns,
-    path_statements,
-    private_doc_tests,
-    private_in_public,
-    proc_macro_derive_resolution_fallback,
-    redundant_semicolons,
-    renamed_and_removed_lints,
-    safe_packed_borrows,
-    stable_features,
-    trivial_bounds,
-    trivial_casts,
-    trivial_numeric_casts,
-    type_alias_bounds,
-    tyvar_behind_raw_pointer,
-    unconditional_recursion,
-    unknown_lints,
-    unnameable_test_items,
-    unreachable_code,
-    unreachable_patterns,
-    unreachable_pub,
-    unsafe_code,
-    unstable_features,
-    unstable_name_collisions,
-    unused_allocation,
-    unused_assignments,
-    unused_attributes,
-    unused_comparisons,
-    unused_doc_comments,
-    unused_extern_crates,
-    unused_features,
-    unused_import_braces,
-    unused_imports,
-    unused_labels,
-    unused_lifetimes,
-    unused_macros,
-    unused_must_use,
-    unused_mut,
-    unused_parens,
-    unused_qualifications,
-    unused_results,
-    unused_unsafe,
-    unused_variables,
-    variant_size_differences,
-    where_clauses_object_safety,
-    while_true
+        absolute_paths_not_starting_with_crate,
+        anonymous_parameters,
+        array_into_iter,
+        asm_sub_register,
+        bare_trait_objects,
+        bindings_with_variant_name,
+        // box_pointers,
+        break_with_label_and_loop,
+        cenum_impl_drop_cast,
+        clashing_extern_declarations,
+        coherence_leak_check,
+        confusable_idents,
+        const_evaluatable_unchecked,
+        const_item_mutation,
+        dead_code,
+        deprecated,
+        deprecated_in_future,
+        drop_bounds,
+        elided_lifetimes_in_paths,
+        ellipsis_inclusive_range_patterns,
+        explicit_outlives_requirements,
+        exported_private_dependencies,
+        forbidden_lint_groups,
+        function_item_references,
+        illegal_floating_point_literal_pattern,
+        improper_ctypes,
+        improper_ctypes_definitions,
+        incomplete_features,
+        indirect_structural_match,
+        inline_no_sanitize,
+        invalid_doc_attributes,
+        invalid_value,
+        irrefutable_let_patterns,
+        keyword_idents,
+        late_bound_lifetime_arguments,
+        legacy_derive_helpers,
+        macro_use_extern_crate,
+        meta_variable_misuse,
+        missing_abi,
+        missing_copy_implementations,
+        missing_debug_implementations,
+        missing_docs,
+        mixed_script_confusables,
+        mutable_borrow_reservation_conflict,
+        no_mangle_generic_items,
+        non_ascii_idents,
+        non_camel_case_types,
+        non_shorthand_field_patterns,
+        non_snake_case,
+        non_upper_case_globals,
+        nontrivial_structural_match,
+        noop_method_call,
+        overlapping_range_endpoints,
+        path_statements,
+        pointer_structural_match,
+        private_in_public,
+        proc_macro_back_compat,
+        proc_macro_derive_resolution_fallback,
+        redundant_semicolons,
+        renamed_and_removed_lints,
+        semicolon_in_expressions_from_macros,
+        single_use_lifetimes,
+        stable_features,
+        temporary_cstring_as_ptr,
+        trivial_bounds,
+        trivial_casts,
+        trivial_numeric_casts,
+        type_alias_bounds,
+        tyvar_behind_raw_pointer,
+        unaligned_references,
+        uncommon_codepoints,
+        unconditional_recursion,
+        uninhabited_static,
+        unknown_lints,
+        unnameable_test_items,
+        unreachable_code,
+        unreachable_patterns,
+        unreachable_pub,
+        unsafe_code,
+        unsafe_op_in_unsafe_fn,
+        unstable_features,
+        unstable_name_collisions,
+        unsupported_naked_functions,
+        unused_allocation,
+        unused_assignments,
+        unused_attributes,
+        unused_braces,
+        unused_comparisons,
+        unused_crate_dependencies,
+        unused_doc_comments,
+        unused_extern_crates,
+        unused_features,
+        unused_import_braces,
+        unused_imports,
+        unused_labels,
+        unused_lifetimes,
+        unused_macros,
+        unused_must_use,
+        unused_mut,
+        unused_parens,
+        unused_qualifications,
+        unused_results,
+        unused_unsafe,
+        unused_variables,
+        variant_size_differences,
+        where_clauses_object_safety,
+        while_true,
 )]
 
 use std::io::{Result, Write};
 
-///  Create a hexdump on the given writer
+/// Create a hexdump on the given writer
 ///
 /// # Example
 ///
@@ -134,30 +164,73 @@ pub fn hexdump<W>(buffer: &[u8], writer: &mut W) -> Result<()>
 where
     W: Write,
 {
-    let mut sixteen_iter = buffer.chunks(16).enumerate();
+    hexdumpm(buffer, None, writer)
+}
 
-    while let Some((i, parts)) = sixteen_iter.next() {
-        if i > 0 {
-            writeln!(writer)?;
-        }
-        write!(writer, "{:04}: ", i * 16)?;
-        for b in parts {
-            write!(writer, "{:02X} ", b)?;
-        }
+/// Create a hexdump on the given writer, restricted to an optional maximum number
+/// of lines
+///
+/// # Example
+///
+/// ```
+/// # use hxdmp::hexdumpm;
+/// # use std::io::Result;
+/// #
+/// # fn main() -> Result<()> {
+///     let some_bytes = b"Hello, World! I'm hexy";
+///     let mut buffer = Vec::new();
+///     assert!(hexdumpm(some_bytes, Some(1), &mut buffer).is_ok());
+///     assert_eq!(
+///         r#"0000: 48 65 6C 6C 6F 2C 20 57 6F 72 6C 64 21 20 49 27  Hello,.World!.I'"#,
+///         String::from_utf8_lossy(&buffer)
+///     );
+/// #     Ok(())
+/// # }
+pub fn hexdumpm<W>(buffer: &[u8], max_lines_opt: Option<usize>, writer: &mut W) -> Result<()>
+where
+    W: Write,
+{
+    let sixteen_iter = buffer.chunks(16).enumerate();
 
-        for _ in parts.len()..16 {
-            write!(writer, "   ")?;
-        }
-
-        write!(writer, " ")?;
-
-        for b in parts {
-            let ch = *b as char;
-            if ch.is_ascii_graphic() {
-                write!(writer, "{}", ch)?;
-            } else {
-                write!(writer, ".")?;
+    if let Some(max) = max_lines_opt {
+        for (line, parts) in sixteen_iter {
+            if line < max {
+                hex(line, parts, writer)?;
+                break;
             }
+        }
+    } else {
+        for (line, parts) in sixteen_iter {
+            hex(line, parts, writer)?;
+        }
+    }
+    Ok(())
+}
+
+fn hex<W>(line: usize, parts: &[u8], writer: &mut W) -> Result<()>
+where
+    W: Write,
+{
+    if line > 0 {
+        writeln!(writer)?;
+    }
+    write!(writer, "{:04}: ", line * 16)?;
+    for b in parts {
+        write!(writer, "{:02X} ", b)?;
+    }
+
+    for _ in parts.len()..16 {
+        write!(writer, "   ")?;
+    }
+
+    write!(writer, " ")?;
+
+    for b in parts {
+        let ch = *b as char;
+        if ch.is_ascii_graphic() {
+            write!(writer, "{}", ch)?;
+        } else {
+            write!(writer, ".")?;
         }
     }
     Ok(())
